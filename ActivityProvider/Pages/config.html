@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Activity Provider: Tradução Colaborativa</title>
+    <style>
+        body {
+            font-family: Open Sans,system-ui,Avenir,Helvetica,Arial,sans-serif;
+            margin: 2rem;
+        }
+        label {
+            padding-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        .input {
+            display: flex;
+            flex-direction: column;
+            max-width: 50%;
+            padding: 0.5rem 0;
+        }
+        input, textarea {
+            padding: 0.5rem 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Activity Provider: Tradução Colaborativa</h1>
+    <p>
+        Página de configuração do pedido de tradução.
+    </p>
+
+
+    <div class="input">
+        <label for="tempo_limite_mins">Tempo limite (em minutos):</label>
+        <input id="tempo_limite_mins" name="tempo_limite_mins" type="number" />
+    </div>
+
+    <div class="input">
+        <label for="idioma_destino">Traduzir para idioma:</label>
+        <input id="idioma_destino" name="idioma_destino" type="text" />
+    </div>
+
+    <div class="input">
+        <label for="texto">Texto para traduzir:</label>
+        <textarea id="texto" name="texto" rows="10"></textarea>
+    </div>
+
+    <div class="input">
+        <label for="instrucoes_traducao">Instruções para o tradutor:</label>
+        <textarea id="instrucoes_traducao" name="instrucoes_traducao" rows="5"></textarea>
+    </div>
+
+    <div class="input">
+        <label for="numero_tradutores">Número de tradutores:</label>
+        <input id="numero_tradutores" name="numero_tradutores" type="number" />
+    </div>
+
+    <div class="input">
+        <label for="api_key_revisor">API Key do utilizador do revisor:</label>
+        <input id="api_key_revisor" name="api_key_revisor" type="text" />
+    </div>
+
+
+
+</body>
+</html>

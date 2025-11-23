@@ -1,0 +1,45 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Activity Provider: Tradução Colaborativa</title>
+    <style>
+        body {
+            font-family: Open Sans,system-ui,Avenir,Helvetica,Arial,sans-serif;
+            margin: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Activity Provider: Tradução Colaborativa</h1>
+    <p>
+        Tradução Colaborativa é um módulo Activity Provider voltado para a arquitetura Inven!RA, que permite a tradução colaborativa de documentos e textos, e também o peer review das traduções, sejam eles traduzidos de forma comercial ou com finalidade acadêmica. O objetivo deste módulo é permitir com que plataformas de tradução possam implementar a arquitetura Inven!RA e abstrair parte da gestão de correções de tradução e a tarefa de gerir os analytics relacionados às mesmas.
+    </p>
+    <p>
+        Pequenos trechos de texto ou frases serão atribuídos aos tradutores, que deverão traduzi-los da forma mais natural possível. A aplicação fornecerá ao tradutor uma visualização do texto original (para contexto) com o trecho a traduzir em destaque, e também um editor de texto onde o tradutor deverá inserir o texto traduzido. O revisor terá acesso à mesma interface, onde poderá corrigir as traduções e indicar os acertos e erros.
+    </p>
+    <p>
+        Autor: Lucas Schaefer
+    </p>
+    <div style="display:flex; flex-direction: column; gap: 1rem;">
+        <a href="https://github.com/LucasSchaefer/ActivityProvider" target="_blank">Referência GitHub</a>
+        <a href="/index" target="_blank">Ficheiro de registo</a>
+    </div>
+    <h1>Endpoints</h1>
+    <h3>Página de configuração da atividade (config_url)</h3>
+    <span>GET /config-translate</span>
+    <h3>Lista de parâmetros que se podem obter nessa página de configuração (json_params_url)</h3>
+    <span>GET /json-params-translate</span>
+    <h3>URL de deploy da atividade (user_url)</h3>
+    <span>GET /deploy-translate?activityID={id}</span>
+    <h3>Analytics de um utilizador da atividade (analytics_url)</h3>
+    <span>POST /analytics-translate</span>
+    <h3>Lista de analytics disponíveis na atividade (analytics_list_url)</h3>
+    <span>GET /analytics-list-translate</span>
+
+
+
+
+
+</body>
+</html>
