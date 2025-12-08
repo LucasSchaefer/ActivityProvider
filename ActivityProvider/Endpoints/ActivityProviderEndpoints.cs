@@ -1,12 +1,20 @@
-﻿using ActivityProvider.Models;
+﻿using ActivityProvider.Factory;
+using ActivityProvider.Models;
+using ActivityProvider.Models.Atores;
+using ActivityProvider.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ActivityProvider.Endpoints
 {
     public static class ActivityProviderEndpoints
     {
+        // Lista de Atividades apenas para fins de teste.
+        public static List<Document> Atividades { get; set; } = [];
+        public static List<ActorProcess> Processos { get; set; } = [];
+
         public static void MapActivityProviderEndpoints(this WebApplication app)
         {
             app.MapGet("/", GetConfigFile);
@@ -16,6 +24,10 @@ namespace ActivityProvider.Endpoints
             app.MapGet("/deploy-translate", GetDeploy);
             app.MapPost("/analytics-translate", GetAnalyticsConfig);
             app.MapGet("/analytics-list-translate", GetAnalyticsListConfig);
+
+            app.MapPost("/process", AccessProcess);
+            app.MapPatch("/process", ChangeText);
+            app.MapGet("/status", GetMyProcess);
         }
 
         private static async Task GetConfigFile(HttpContext context)
@@ -64,12 +76,29 @@ namespace ActivityProvider.Endpoints
             return Results.Ok(configs);
         }
 
-        private static async Task<IResult> GetDeploy([FromServices] IConfiguration conf, [FromQuery] string activityID)
+        private static async Task<IResult> GetDeploy(
+            [FromServices] IConfiguration conf,
+            [FromServices] IActorProcessFactory processFactory,
+            [FromServices] AuthService authService,
+            [FromQuery] string activityID,
+            [FromBody] DeployRequest data)
         {
             var baseUrl = conf.GetValue<string>("ServiceUrl");
 
             if (string.IsNullOrWhiteSpace(activityID))
                 return Results.BadRequest("ActivityID invalido");
+
+            var novaAtividade = new Document
+            {
+                Id = (Atividades.LastOrDefault()?.Id ?? 0) + 1,
+                ActivityId = activityID,
+                Text = data.Texto,
+                Instructions = data.Instrucoes,
+                LanguageFrom = data.IdiomaOrigem,
+                LanguageTo = data.IdiomaDestino
+            };
+
+            Atividades.Add(novaAtividade);
 
             var activityUrl = $"{baseUrl}/atividade/{activityID}";
 
@@ -119,6 +148,82 @@ namespace ActivityProvider.Endpoints
             var configs = new AnalyticsList(qual, quant);
 
             return Results.Ok(configs);
+        }
+
+        private static async Task<IResult> AccessProcess(
+            [FromServices] IActorProcessFactory processFactory,
+            [FromServices] AuthService authService,
+            [FromQuery] string activityID,
+            [FromQuery] string userIdentifier)
+        {
+            var document = Atividades.FirstOrDefault(p => p.ActivityId == activityID);
+
+            if (document == null)
+                return Results.NotFound();
+
+            // Obtem o tipo do Actor, baseado no auth. Atualmente é uma mock.
+            var userType = (ActorType)Random.Shared.Next(1, 3);
+
+            //Obtem o processo que pertence ao Actor, caso exista.
+            var process = Processos.FirstOrDefault(p => p.GetType() == GetProcessTypeByActor(userType) && p.Documento.ActivityId == activityID);
+
+            if (process == null)
+            {
+                /// Cria um novo processo para o Actor autenticado.
+                /// Utiliza o padrão Factory para criar o método específico para o utilizador autenticado.
+                /// 
+                /// Um Processo é criado para cada utilizador, e possui particularidades para cada perfil.
+                /// Cada tipo de utilizador possui o seu próprio comportamento e permissões de acesso ao processo.
+                /// Esta implementação do padrão busca desacoplar o comportamento específico da criação do processo para o utilizador.
+                var proc = processFactory.CreateNewProcess(userType, userIdentifier);
+                proc.Documento = document;
+
+                Processos.Add(proc);
+            }
+
+            return Results.Ok(process);
+        }
+
+        //Edita o texto do documento, respectivo à função do Actor.
+        private static async Task<IResult> ChangeText(
+            [FromServices] IActorProcessFactory processFactory, [FromServices] AuthService authService, [FromQuery] string activityID, [FromQuery] string input)
+        {
+            // Obtem o tipo do Actor, baseado no auth. Atualmente é uma mock.
+            var userType = (ActorType)Random.Shared.Next(1, 3);
+
+            //Obtem o processo que pertence ao Actor.
+            //Utiliza o método ChangeText genérico, e retorna o sucesso ou erro.
+            var process = Processos.FirstOrDefault(p => p.GetType() == GetProcessTypeByActor(userType) && p.Documento.ActivityId == activityID);
+            if (process is not null)
+                return Results.Ok(process.ChangeText(input));
+
+            return Results.NotFound();
+        }
+
+        //Obtem o status do processo do Actor autenticado, por ActivityID.
+        private static async Task<IResult> GetMyProcess([FromServices] IActorProcessFactory processFactory, [FromServices] AuthService authService, [FromQuery] string activityID)
+        {
+            // Obtem o tipo do Actor, baseado no auth. Atualmente é uma mock.
+            var userType = (ActorType)Random.Shared.Next(1, 3);
+
+            //Obtem o processo que pertence ao Actor.
+            //Retorna o status do processo, e utiliza o método GetStatus genérico.
+            var process = Processos.FirstOrDefault(p => p.GetType() == GetProcessTypeByActor(userType) && p.Documento.ActivityId == activityID);
+            if (process is not null)
+                return Results.Ok(process.GetStatus());
+
+            return Results.NotFound();
+        }
+
+        private static Type GetProcessTypeByActor(ActorType actorType)
+        {
+            return actorType switch
+            {
+                ActorType.Cliente => typeof(ProcessoCliente),
+                ActorType.Tradutor => typeof(ProcessoTradutor),
+                ActorType.Revisor => typeof(ProcessoRevisor),
+                _ => throw new NotImplementedException(),
+            };
         }
     }
 }
