@@ -16,7 +16,7 @@
             {
                 Texto = Documento.Text,
                 Instrucoes = Documento.Instructions,
-                Status = string.Empty
+                Status = Documento.Status
             };
         }
     }

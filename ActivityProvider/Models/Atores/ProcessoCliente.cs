@@ -13,7 +13,7 @@
             return new DeployStatus
             {
                 Texto = Documento.Text,
-                Status = string.Empty
+                Status = Documento.Status
             };
         }
     }

@@ -1,6 +1,7 @@
 using ActivityProvider.Endpoints;
 using ActivityProvider.Factory;
 using ActivityProvider.Services;
+using ActivityProvider.Services.Proxy;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,10 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<ProcessService>();
+builder.Services.AddScoped<IProcessService>(p => 
+    new ProcessProxyService(p.GetRequiredService<ProcessService>())
+);
 builder.Services.AddScoped<IActorProcessFactory, ActorProcessFactory>();
 // Add services to the container.
 
