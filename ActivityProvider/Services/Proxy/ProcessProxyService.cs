@@ -48,6 +48,13 @@ namespace ActivityProvider.Services.Proxy
             return await processService.ChangeText(activityID, type, input);
         }
 
+        public async Task<bool> RestoreLastVersionText(string activityID, ActorType type)
+        {
+            var processo = await GetProcess(activityID);
+
+            return await processService.RestoreLastVersionText(activityID, type);
+        }
+
         public async Task<DeployStatus> GetMyProcess(string activityID, ActorType type)
         {
             return await processService.GetMyProcess(activityID, type);

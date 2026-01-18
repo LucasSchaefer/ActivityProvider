@@ -62,3 +62,15 @@ Cliente -> Proxy (valida/processa) -> Repositório Real -> Base de Dados
 **Exemplo**: Quando você chama `ChangeText()`, este proxy intercepta, processa o objeto Process e SÓ ENTÃO chama a base de dados real.
 
 /Services/Proxy/ProcessProxyService.cs - Serviço Proxy que partilha assinatura com o serviço "real"
+
+## Padrão de Comportamento: MEMENTO
+
+O padrão Memento é ideal para implementar funcionalidades de histórico de texto com capacidade de restaurar versões.
+Captura o estado interno de um objeto (como o conteúdo do texto) sem expor seus detalhes privados.
+Com o histórico de versões sendo armazenado em uma lista separada, e apenas manipulado pelo ProcessService, a funcionalidade de versionamento é encapsulada.
+
+Com a ajuda do padrão PROXY, também é transparente para o programador ao utilizar o ChangeText de um processo, que as versões sejam armazenadas.
+
+/Services/Memento/TranslationManager.cs - serviço que implementa as funções de Save e Restore dos mementos.
+
+Foi definido que o próprio ProcessService.cs seja o Caretaker, e possa gerir a lista de mementos de um processo e a chamada do Save e Restore.

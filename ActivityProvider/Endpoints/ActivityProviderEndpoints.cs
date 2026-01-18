@@ -1,5 +1,6 @@
 ﻿using ActivityProvider.Factory;
 using ActivityProvider.Models;
+using ActivityProvider.Models.Atores;
 using ActivityProvider.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
@@ -85,7 +86,7 @@ namespace ActivityProvider.Endpoints
 
             var novaAtividade = new Document
             {
-                Id = (ProcessService.Atividades.LastOrDefault()?.Id ?? 0) + 1,
+                Id = (ProcessService.Documentos.LastOrDefault()?.Id ?? 0) + 1,
                 ActivityId = activityID,
                 Text = data.Texto,
                 Instructions = data.Instrucoes,
@@ -93,7 +94,7 @@ namespace ActivityProvider.Endpoints
                 LanguageTo = data.IdiomaDestino
             };
 
-            ProcessService.Atividades.Add(novaAtividade);
+            ProcessService.Documentos.Add(novaAtividade);
 
             var activityUrl = $"{baseUrl}/atividade/{activityID}";
 
