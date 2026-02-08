@@ -1,5 +1,7 @@
 ﻿using ActivityProvider.Models;
 using ActivityProvider.Models.Atores;
+using ActivityProvider.Services.Memento;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace ActivityProvider.Services.Proxy
@@ -25,7 +27,7 @@ namespace ActivityProvider.Services.Proxy
     /// **Exemplo**: Quando você chama `CreateNewProcess()`, este proxy intercepta, 
     /// processa o objeto Process e SÓ ENTÃO chama a base de dados real.
     /// </summary>
-    public class ProcessProxyService(IProcessService processService) : IProcessService
+    public class ProcessProxyService(IProcessService processService, TranslationManager translationManager) : IProcessService
     {
         public async Task<ActorProcess> CreateNewProcess(string activityID, ActorType type, string userIdentifier)
         {
@@ -45,12 +47,27 @@ namespace ActivityProvider.Services.Proxy
             //3. **Normalização**: Sanitiza texto
             input = SanitizaTexto(input);
 
+            //4. **Versionamento**: Guarda uma nova versão de Processo, através do padrão Memento.
+            GuardaVersao(processo);
+
             return await processService.ChangeText(activityID, type, input);
         }
 
         public async Task<bool> RestoreLastVersionText(string activityID, ActorType type)
         {
-            var processo = await GetProcess(activityID);
+            var process = await GetProcess(activityID);
+
+            if (process is not null)
+            {
+                //Não há versões anteriores a restaurar.
+                if (process.Historico.Count == 0)
+                    return false;
+
+                //Restaura a versão anterior do texto e remove do histórico (mementos)
+                var lastMemento = process.Historico.Last();
+                process.Historico.Remove(lastMemento);
+                translationManager.RestoreFromMemento(ref process, lastMemento);
+            }
 
             return await processService.RestoreLastVersionText(activityID, type);
         }
@@ -99,6 +116,13 @@ namespace ActivityProvider.Services.Proxy
         {
             actorProcess.AlteradoEm = DateTime.UtcNow;
             actorProcess.AlteradoPor = "user";
+        }
+
+        private void GuardaVersao(ActorProcess process)
+        {
+            //Guarda a versão atual do texto no histórico (memento).
+            var memento = translationManager.SaveToMemento(ref process);
+            process.Historico.Add(memento);
         }
     }
 }

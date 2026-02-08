@@ -1,7 +1,6 @@
 ﻿using ActivityProvider.Factory;
 using ActivityProvider.Models;
 using ActivityProvider.Models.Atores;
-using ActivityProvider.Services.Memento;
 
 namespace ActivityProvider.Services
 {
@@ -15,7 +14,7 @@ namespace ActivityProvider.Services
         Task<bool> CompleteProcess(string activityID, ActorType type);
     }
 
-    public class ProcessService(IActorProcessFactory processFactory, AuthService authService, TranslationManager translationManager) : IProcessService
+    public class ProcessService(IActorProcessFactory processFactory, AuthService authService) : IProcessService
     {
         public static List<ActorProcess> Processos { get; set; } = [];
         public static List<Document> Documentos { get; set; } = [];
@@ -59,10 +58,6 @@ namespace ActivityProvider.Services
 
             if (process is not null)
             {
-                //Guarda a versão atual do texto no histórico (memento).
-                var memento = translationManager.SaveToMemento(ref process);
-                process.Historico.Add(memento);
-
                 //Altera o texto com a nova versão.
                 return process.ChangeText(input);
             }
@@ -78,18 +73,6 @@ namespace ActivityProvider.Services
             //Obtem o processo que pertence ao Actor.
             //Utiliza o método ChangeText genérico, e retorna o sucesso ou erro.
             var process = Processos.FirstOrDefault(p => p.GetType() == GetProcessTypeByActor(type) && p.Documento.ActivityId == activityID);
-
-            if (process is not null)
-            {
-                //Não há versões anteriores a restaurar.
-                if (process.Historico.Count == 0)
-                    return false;
-
-                //Restaura a versão anterior do texto e remove do histórico (mementos)
-                var lastMemento = process.Historico.Last();
-                process.Historico.Remove(lastMemento);
-                translationManager.RestoreFromMemento(ref process, lastMemento);
-            }
 
             //Guarda no DB - mock
 

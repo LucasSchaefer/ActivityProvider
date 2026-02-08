@@ -1,6 +1,5 @@
 ﻿using ActivityProvider.Factory;
 using ActivityProvider.Models;
-using ActivityProvider.Models.Atores;
 using ActivityProvider.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
